@@ -1,0 +1,9 @@
+[package]
+name = "advent-of-code-2020"
+version = "0.1.0"
+authors = ["Johannes Löthberg <johannes@kyriasis.com>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+itertools = "0.9.0"
