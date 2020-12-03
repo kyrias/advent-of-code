@@ -42,11 +42,7 @@ fn parse_line(input: &str) -> IResult<&str, PasswordSpecification> {
 
 fn password_is_valid_down_the_street(spec: &PasswordSpecification) -> bool {
     let matches = spec.password.chars().filter(|&c| c == spec.letter).count();
-    if matches < spec.min || matches > spec.max {
-        false
-    } else {
-        true
-    }
+    matches >= spec.min && matches <= spec.max
 }
 
 fn password_is_valid_north_pole_toboggan(spec: &PasswordSpecification) -> bool {
