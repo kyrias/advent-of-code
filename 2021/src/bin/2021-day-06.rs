@@ -62,9 +62,9 @@ fn simulate_days(school: &mut School, days: usize) {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let stdin = std::io::stdin();
-    let mut input_lines = stdin.lock().lines();
-
-    let timers = input_lines
+    let timers = stdin
+        .lock()
+        .lines()
         .next()
         .ok_or("no timer input given")??;
 
