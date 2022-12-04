@@ -33,11 +33,7 @@ fn main() {
 
     let any_overlap = ranges
         .iter()
-        .filter(|(min, max)| {
-            (min.start() <= max.start() && min.end() >= max.end())
-                || (min.start() >= max.start() && min.start() <= max.end())
-                || (min.end() >= max.start() && min.end() <= max.end())
-        })
+        .filter(|(min, max)| min.contains(max.start()))
         .count();
     println!("Any overlap: {}", any_overlap);
 }
