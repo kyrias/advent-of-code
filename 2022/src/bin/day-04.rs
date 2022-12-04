@@ -10,7 +10,7 @@ fn to_range(assignments: &str) -> RangeInclusive<isize> {
 }
 
 fn main() {
-    let fully_contained = std::io::stdin()
+    let ranges: Vec<_> = std::io::stdin()
         .lines()
         .map(|line| {
             let line = line.unwrap();
@@ -23,8 +23,21 @@ fn main() {
 
             (ranges[0].clone(), ranges[1].clone())
         })
+        .collect();
+
+    let fully_contained = ranges
+        .iter()
         .filter(|(min, max)| min.start() <= max.start() && min.end() >= max.end())
         .count();
-
     println!("Fully contained: {}", fully_contained);
+
+    let any_overlap = ranges
+        .iter()
+        .filter(|(min, max)| {
+            (min.start() <= max.start() && min.end() >= max.end())
+                || (min.start() >= max.start() && min.start() <= max.end())
+                || (min.end() >= max.start() && min.end() <= max.end())
+        })
+        .count();
+    println!("Any overlap: {}", any_overlap);
 }
