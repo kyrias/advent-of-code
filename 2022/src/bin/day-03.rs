@@ -9,7 +9,7 @@ fn priority(item: char) -> usize {
 }
 
 fn main() {
-    let sum: usize = std::io::stdin()
+    let (total, intersections) = std::io::stdin()
         .lines()
         .map(|line| {
             let line = line.unwrap();
@@ -17,8 +17,27 @@ fn main() {
 
             let first: HashSet<char> = line[..half].chars().collect();
             let second: HashSet<char> = line[half..].chars().collect();
-            first.intersection(&second).copied().map(priority).sum::<usize>()
+
+            (
+                first
+                    .intersection(&second)
+                    .copied()
+                    .map(priority)
+                    .sum::<usize>(),
+                line.chars().collect::<HashSet<_>>(),
+            )
         })
-        .sum();
-    println!("Sum: {}", sum);
+        .fold((0, vec![]), |(total, mut intersections), (sum, chars)| {
+            intersections.push(chars);
+            (total + sum, intersections)
+        });
+
+    let badge_sum: usize = intersections.chunks(3).map(|item| {
+        let intermediate: HashSet<char> = item[0].intersection(&item[1]).copied().collect();
+        let intersection: Vec<char> = intermediate.intersection(&item[2]).copied().collect();
+        assert_eq!(intersection.len(), 1);
+        priority(intersection[0])
+    }).sum();
+
+    println!("Sum: {} {}", total, badge_sum);
 }
