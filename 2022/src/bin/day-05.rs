@@ -26,6 +26,8 @@ fn main() {
     // Skip empty line
     lines.next();
 
+    let mut part1_stacks = stacks.clone();
+    let mut part2_stacks = stacks;
     lines
         .map(|m| {
             let mut fields = m.split(' ');
@@ -36,11 +38,26 @@ fn main() {
         })
         .for_each(|(number, from, to)| {
             for _ in 0..number {
-                let item = stacks[from].pop_back().unwrap();
-                stacks[to].push_back(item);
+                let item = part1_stacks[from].pop_back().unwrap();
+                part1_stacks[to].push_back(item);
+            }
+
+            {
+                let from_stack = &mut part2_stacks[from];
+                let items: Vec<_> = from_stack.drain(from_stack.len() - number..).collect();
+                part2_stacks[to].extend(items);
             }
         });
 
-    let top_of_stacks: String = stacks.iter().map(|stack| stack.back().unwrap()).collect();
-    println!("{top_of_stacks}");
+    let top_of_stacks: String = part1_stacks
+        .iter()
+        .map(|stack| stack.back().unwrap())
+        .collect();
+    println!("Part 1: {top_of_stacks}");
+
+    let top_of_stacks: String = part2_stacks
+        .iter()
+        .map(|stack| stack.back().unwrap())
+        .collect();
+    println!("Part 2: {top_of_stacks}");
 }
