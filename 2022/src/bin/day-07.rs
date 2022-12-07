@@ -3,6 +3,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
+static NEEDED_DISK_SPACE: usize = 30_000_000;
+static TOTAL_DISK_SPACE: usize = 70_000_000;
+
 #[derive(Debug, Clone, Default)]
 struct Directory {
     name: OsString,
@@ -91,4 +94,12 @@ fn main() {
         .map(|dir| dir.size())
         .sum();
     println!("Part 1: {}", sum);
+
+    let more_space_needed = NEEDED_DISK_SPACE - (TOTAL_DISK_SPACE - root.size());
+    let smallest_matching = flattened
+        .iter()
+        .filter(|dir| dir.size() >= more_space_needed)
+        .min_by_key(|dir| dir.size())
+        .unwrap();
+    println!("Part 2: {}", smallest_matching.size());
 }
