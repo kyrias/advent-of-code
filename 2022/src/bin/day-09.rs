@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use itertools::repeat_n;
-
 #[derive(Clone, Copy)]
 enum Movement {
     Up,
@@ -41,47 +39,60 @@ impl Position {
 
 #[derive(Default, Debug)]
 struct State {
-    head: Position,
-    tail: Position,
+    knots: [Position; 10],
 }
 
 impl State {
     fn perform_movement(&mut self, movement: Movement) {
-        self.head.perform_movement(movement);
+        self.knots[0].perform_movement(movement);
 
-        if ((self.tail.row - 1)..=(self.tail.row + 1)).contains(&self.head.row)
-            && ((self.tail.column - 1)..=(self.tail.column + 1)).contains(&self.head.column)
-        {
-            // If the head is still within a one-unit radius the tail doesn't move.
-        } else if ((self.tail.row - self.head.row).abs() == 2
-            && self.tail.column == self.head.column)
-            || ((self.tail.column - self.head.column).abs() == 2 && self.tail.row == self.head.row)
-        {
-            // The head is exactly two steps directionally away from tail, so move in the same
-            // direction.
-            self.tail.perform_movement(movement);
-        } else if self.head.row < self.tail.row && self.head.column > self.tail.column {
-            self.tail.row -= 1;
-            self.tail.column += 1;
-        } else if self.head.row > self.tail.row && self.head.column > self.tail.column {
-            self.tail.row += 1;
-            self.tail.column += 1;
-        } else if self.head.row > self.tail.row && self.head.column < self.tail.column {
-            self.tail.row += 1;
-            self.tail.column -= 1;
-        } else if self.head.row < self.tail.row && self.head.column < self.tail.column {
-            self.tail.row -= 1;
-            self.tail.column -= 1;
+        let mut iter = self.knots.iter_mut();
+        let mut head = iter.next().unwrap();
+        for tail in iter {
+            if ((tail.row - 1)..=(tail.row + 1)).contains(&head.row)
+                && ((tail.column - 1)..=(tail.column + 1)).contains(&head.column)
+            {
+                // If the head is still within a one-unit radius the tail doesn't move.
+            } else if ((tail.row - head.row).abs() == 2 && tail.column == head.column)
+                || ((tail.column - head.column).abs() == 2 && tail.row == head.row)
+            {
+                // The head is exactly two steps directionally away from tail, so move in the same
+                // direction.
+                if tail.row == head.row - 2 {
+                    tail.row += 1;
+                } else if tail.row == head.row + 2 {
+                    tail.row -= 1;
+                } else if tail.column == head.column - 2 {
+                    tail.column += 1;
+                } else if tail.column == head.column + 2 {
+                    tail.column -= 1;
+                } else {
+                    unreachable!();
+                }
+            } else if head.row < tail.row && head.column > tail.column {
+                tail.row -= 1;
+                tail.column += 1;
+            } else if head.row > tail.row && head.column > tail.column {
+                tail.row += 1;
+                tail.column += 1;
+            } else if head.row > tail.row && head.column < tail.column {
+                tail.row += 1;
+                tail.column -= 1;
+            } else if head.row < tail.row && head.column < tail.column {
+                tail.row -= 1;
+                tail.column -= 1;
+            }
+            head = tail;
         }
     }
 }
 
 fn main() {
-    let movements: Vec<Movement> = std::io::stdin()
+    let movements: Vec<(Movement, usize)> = std::io::stdin()
         .lines()
-        .flat_map(|line| {
+        .map(|line| {
             let mut parts = line.as_ref().unwrap().split(' ');
-            repeat_n(
+            (
                 parts.next().unwrap().into(),
                 parts.next().unwrap().parse().unwrap(),
             )
@@ -89,10 +100,16 @@ fn main() {
         .collect();
 
     let mut state: State = Default::default();
-    let mut visited = HashSet::new();
-    for movement in movements.iter().copied() {
-        state.perform_movement(movement);
-        visited.insert(state.tail);
+
+    let mut visited_part1 = HashSet::new();
+    let mut visited_part2 = HashSet::new();
+    for (movement, number) in movements.iter().copied() {
+        for _ in 0..number {
+            state.perform_movement(movement);
+            visited_part1.insert(state.knots[1]);
+            visited_part2.insert(state.knots[9]);
+        }
     }
-    println!("Unique tail positions: {}", visited.len());
+    println!("Unique tail positions: {}", visited_part1.len());
+    println!("Unique tail positions: {}", visited_part2.len());
 }
