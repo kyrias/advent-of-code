@@ -12,6 +12,30 @@ fn is_visible(map: &Array2<u32>, row: usize, column: usize) -> bool {
         || right.iter().skip(1).all(|t| *t < height)
 }
 
+fn scenic_score(map: &Array2<u32>, row: usize, column: usize) -> usize {
+    let height = map.row(row)[column];
+    let (left, right) = map.row(row).split_at(Axis(0), column);
+    let (top, bottom) = map.column(column).split_at(Axis(0), row);
+
+    let viewing_distance = |(acc, cont): (usize, bool), t: &u32| -> (usize, bool) {
+        if !cont {
+            (acc, cont)
+        } else if *t < height {
+            (acc + 1, true)
+        } else {
+            (acc + 1, false)
+        }
+    };
+
+    let (top_distance, _) = top.iter().rev().fold((0, true), viewing_distance);
+    let (bottom_distance, _) = bottom.iter().skip(1).fold((0, true), viewing_distance);
+
+    let (left_distance, _) = left.iter().rev().fold((0, true), viewing_distance);
+    let (right_distance, _) = right.iter().skip(1).fold((0, true), viewing_distance);
+
+    top_distance * left_distance * bottom_distance * right_distance
+}
+
 fn main() {
     let mut lines = std::io::stdin()
         .lines()
@@ -30,4 +54,11 @@ fn main() {
         .filter(|(row, column)| is_visible(&map, *row, *column))
         .count();
     println!("Visible trees: {}", border_trees + visible_trees);
+
+    let highest_scenic_score = (0..height)
+        .cartesian_product(0..width)
+        .map(|(row, column)| scenic_score(&map, row, column))
+        .max()
+        .unwrap();
+    println!("Highest scenic score: {}", highest_scenic_score);
 }
