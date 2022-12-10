@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, cmp::Ordering};
 
 #[derive(Clone, Copy)]
 enum Movement {
@@ -49,38 +49,19 @@ impl State {
         let mut iter = self.knots.iter_mut();
         let mut head = iter.next().unwrap();
         for tail in iter {
-            if ((tail.row - 1)..=(tail.row + 1)).contains(&head.row)
-                && ((tail.column - 1)..=(tail.column + 1)).contains(&head.column)
-            {
+            if (tail.row - head.row).abs() <= 1 && (tail.column - head.column).abs() <= 1 {
                 // If the head is still within a one-unit radius the tail doesn't move.
-            } else if ((tail.row - head.row).abs() == 2 && tail.column == head.column)
-                || ((tail.column - head.column).abs() == 2 && tail.row == head.row)
-            {
-                // The head is exactly two steps directionally away from tail, so move in the same
-                // direction.
-                if tail.row == head.row - 2 {
-                    tail.row += 1;
-                } else if tail.row == head.row + 2 {
-                    tail.row -= 1;
-                } else if tail.column == head.column - 2 {
-                    tail.column += 1;
-                } else if tail.column == head.column + 2 {
-                    tail.column -= 1;
-                } else {
-                    unreachable!();
-                }
-            } else if head.row < tail.row && head.column > tail.column {
-                tail.row -= 1;
-                tail.column += 1;
-            } else if head.row > tail.row && head.column > tail.column {
-                tail.row += 1;
-                tail.column += 1;
-            } else if head.row > tail.row && head.column < tail.column {
-                tail.row += 1;
-                tail.column -= 1;
-            } else if head.row < tail.row && head.column < tail.column {
-                tail.row -= 1;
-                tail.column -= 1;
+            } else {
+                tail.row += match tail.row.cmp(&head.row) {
+                    Ordering::Less => 1,
+                    Ordering::Equal => 0,
+                    Ordering::Greater => -1,
+                };
+                tail.column += match tail.column.cmp(&head.column) {
+                    Ordering::Less => 1,
+                    Ordering::Equal => 0,
+                    Ordering::Greater => -1,
+                };
             }
             head = tail;
         }
